@@ -1,0 +1,74 @@
+1. Find the top 40 longest movies that cost more than $2 to rent.
+Display the movie's title (field title), rental price (field rental_rate), movie length (field length), and age rating (field rating).
+
+          Select title, rental_rate, length, rating from movie where rental_rate > 2
+          Order by length desc
+          Limit 40 
+
+2. Use the query from the first task and analyze the data on the age ratings of the selected films. Export the following fields to the final table:
+age rating (field rating);
+minimum and maximum duration values ​​(field length),
+name the fields min_length and max_length respectively;
+average duration value (field length), name the field avg_length;
+minimum, maximum, and average viewing price (field rental_rate),
+name the fields min_rental_rate, max_rental_rate, avg_rental_rate
+respectively.
+Sort the average film duration in ascending order.
+
+        Subquery:
+        Select rating, min(length) as min_length, max(length) as max_length, avg(length) as avg_length, 
+        min(rental_rate) as min_rental_rate,  max(rental_rate) as  max_rental_rate,  avg(rental_rate) as avg_rental_rate 
+        from (Select title, rental_rate, length, rating from movie where rental_rate > 2
+        Order by length desc Limit 40 ) as table1
+        Group by rating
+        Order by avg(length) 
+
+        CTE:
+        With table1 as
+         (Select title, rental_rate, length, rating from movie where rental_rate > 2
+        Order by length desc Limit 40 ) 
+        
+        Select rating, min(length) as min_length, max(length) as max_length, avg(length) as avg_length, 
+        min(rental_rate) as min_rental_rate,  max(rental_rate) as  max_rental_rate,  avg(rental_rate) as avg_rental_rate  from  table1
+        Group by rating
+        Order by avg(length) 
+
+
+3. Find the average values ​​of the fields containing the selected movies' minimum and maximum lengths. Display only these two fields. Name them avg_min_length and avg_max_length respectively.
+
+
+        With table 1 as
+        (Select title, length, rating from movie where rental_rate > 2
+        Order by length desc 
+        Limit 40 )
+        table 2 as
+        (Select rating, min(length) as min_length, max(length) as max_length from table1
+        Group by rating
+        Order by avg(length))
+        Select avg(min_length) as avg_min_lenght, avg(max_length) as avg_max_length from table2
+
+
+
+4. Select albums whose titles contain the word 'Rock' and its derivatives. These albums must have eight or more tracks. Display one number on the screen — the average number of tracks in the selected albums.
+
+
+        With CTE as
+        (select a.title, t.album_id, count(t.track_id)  as num_tracks from track t
+        Join album a on t.album_id= a.album_id
+        Where a.title like %Rock%
+        group by t.album_id, a.title
+        having count(t.track_id) >7)
+        
+        Select avg(num_tracks) from CTE
+
+
+5. For each country, calculate the average order value in 2009 by month. Select data for months 2, 5, 7, and 10 and add up the average order values. Display the names of countries for which this number exceeds $10.
+
+
+        With table1 as
+        (select billing_country, month(invoice_date) as month, avg(total) as avg_total from invoice where year(invoice_date) = 2009 and month(invoice_date) in (2,5,7,10)
+        Group by billing_country, month(invoice_date))
+        
+        Select sum(avg_total), billing_country from table1
+        Group by billing_country
+        Having sum(avg_total) >10
